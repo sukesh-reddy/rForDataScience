@@ -1,0 +1,174 @@
+---
+title: "Bivariate Analysis in R"
+output:
+  word_document: default
+  pdf_document:
+    number_sections: yes
+  html_document:
+    df_print: paged
+---
+Bivariate Analysis is an integral part of the EDA process. It helps us explore the relationship between different variables and discover valuable insights from the data.
+Here we show visualization methods to perform bivariate analysis based on the type of variables.
+There are different methods for visualizing Quantitative (continuous) and Categorical(discrete) variables.
+
+All the examples are demonstrated using the mpg dataset in ggplot2
+
+This document is based on a [book](https://rkabacoff.github.io/datavis) by Rob Kabacoff. Please feel free to visit his website for more data visualization techniques in R.
+
+
+```{r include = FALSE}
+#installing the required packages
+# install.packages("ggplot2")
+# install.packages("scales")
+# install.packages("ggbeeswarm")
+```
+*** 
+# Quantitative vs Quantitative
+Scatter plots are a good way to showcase the relation between two quantitative variables
+
+## Scatter Plot
+```{r echo=TRUE} 
+library(ggplot2) #loading the library required for this plot
+#scatter plot
+ggplot(mpg,aes(x = displ,y = hwy)) + 
+  geom_point(color="cornflowerblue", #setting the colour, size and transparency(alpha) of the points
+             size = 2, 
+             alpha=.8) +
+  scale_x_continuous(breaks = seq(1, 7, 1), #customizing x-axis : seq(start of units, end of units, size of one unit)
+                     limits = c(1, 7)) + #setting limits of the axis
+  scale_y_continuous(breaks = seq(10, 45, 5), 
+                     limits=c(10, 50)) +
+  labs(x = "Displacement in Litres", #specifying the labels of axes and title of plot
+       y = "Highway fuel economy (miles per gallon)",
+       title = "mpg vs Displacement",
+       subtitle = "Relation between engine size and mpg") +
+  geom_smooth(method = "lm") # this adds a linear trend line which is useful to summarize the relationship between the two variables
+```
+<br />
+Here we can see that fuel economy has an inverse relationship with displacement
+
+***
+# Categorical vs Quantitative
+Kernal Density Plots, Box plots, Jitter plots and Beeswarm plots can be used to explain relationship between Categorical and Quantitative variables in a beautiful and effective manner
+
+## Kernal Density Plot
+```{r echo= TRUE}
+#kernel density plots
+ggplot(mpg, 
+       aes(x = cty, #quantitative variable
+           fill = factor(drv, #defining x axis a categorical
+                         levels = c("f", "r", "4"),
+                         labels = c("front-wheel", #labelling the legend
+                                    "rear-wheel", 
+                                    "4-wheel")))) +
+  geom_density(alpha = 0.4) + #setting transparency of graph to keep overlaps visible
+  labs(fill = "Drive Train", # setting title of legend
+       x = "mpg",
+       title = "Fuel Economy by Drive type")
+```
+<br />
+Here we can see that front-wheel drive vehicles generally have higher fuel economy and are also more spread than the other two drive types
+
+## Jitter Box Plot
+```{r echo =TRUE}
+#jitter and box plots
+library(scales)
+ggplot(mpg, 
+       aes(x = factor(drv, #defining x axis a categorical
+                      labels = c("rear-wheel", #labelling the axis with categorical variable
+                                    "front-wheel", 
+                                    "4-wheel")), 
+           y = cty, 
+           color = drv)) + #specifying that coloring is to be based on drive type
+  geom_boxplot(size=1, #makes the lines thicker
+               outlier.shape = 1, #specifies circles for outliers
+               outlier.color = "black", #makes outliers black
+               outlier.size  = 3) + #increases the size of the outlier symbol
+  geom_jitter(alpha = 0.5, #setting transparency of graph
+              width=.2) + #decreases the amount of jitter (.4 is the default)
+  labs(title = "Fuel Economy by Drive type", 
+       x = "",
+       y = "mpg") +
+  theme_minimal() + #setting minimal theme (no background color)
+  theme(legend.position = "none") + #hiding legend
+  coord_flip() #x and y axes are reversed
+```
+<br /> 
+
+
+## Beeswarm Plot
+```{r warning=FALSE}
+#beeswarm  plot
+library(ggbeeswarm)
+library(scales)
+ggplot(mpg, 
+       aes(x = factor(drv,
+                      labels = c("rear-wheel", #labelling the axis with categorical variable
+                                    "front-wheel", 
+                                    "4-wheel")), 
+           y = cty, 
+           color = drv)) +
+  geom_quasirandom(alpha = 0.7, 
+                   size = 1.5) + #setting size of dots
+  labs(title = "Fuel Economy by Drive type", 
+       x = "drive type",
+       y = "mpg") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+<br />
+ 
+***
+# Categorical vs Categorical
+Bar charts provide a simple and elegant way to represent categorical vs categorical data visually
+
+## Stacked bar chart
+```{r echo=TRUE}
+# stacked bar chart
+ggplot(mpg, 
+       aes(x = class, 
+           fill = factor(drv, 
+                         levels = c("f", "r", "4"),
+                         labels = c("front-wheel", #labelling the legend
+                                    "rear-wheel", 
+                                    "4-wheel")))) + 
+  labs(fill = "Drive Train", # setting title of legend
+       x = "vehicle class",
+       title = "Automobile drive type by class") +
+  geom_bar(position = "stack") #specifying the type of bar chart as stacked
+```
+  
+## Grouped Bar Chart
+```{r echo=TRUE}
+#Grouped bar chart
+ggplot(mpg, 
+       aes(x = class, 
+           fill = factor(drv, 
+                         levels = c("f", "r", "4"),
+                         labels = c("front-wheel", #labelling the legend
+                                    "rear-wheel", 
+                                    "4-wheel")))) + 
+  labs(fill = "Drive Train", # setting title of legend
+       x = "vehicle class",
+       title = "Automobile drive type by class") +
+geom_bar(position = position_dodge(preserve = "single")) #specifying that grouped bar chart should have 3 lines for every class
+```
+  
+## Segmented Bar Chart
+```{r echo=TRUE}
+#Segmented bar chart
+ggplot(mpg, 
+       aes(x = class, 
+           fill = factor(drv, 
+                         levels = c("f", "r", "4"),
+                         labels = c("front-wheel", #labelling the legend
+                                    "rear-wheel", 
+                                    "4-wheel")))) + 
+  labs(fill = "Drive Train", # setting title of legend
+       x = "vehicle class",
+       title = "Automobile drive type by class") +
+geom_bar(position = "fill") + #specifying that the bar chart is of segmented type
+  labs(y = "Proportion")
+```
+
+
